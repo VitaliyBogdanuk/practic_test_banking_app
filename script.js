@@ -1,228 +1,229 @@
 // =======================
-// Banking Simulator:
-// 1) Стан і змінні
-// 2) Пошук елементів на сторінці
-// 3) Маленькі допоміжні функції
-// 4) localStorage (save/load)
-// 5) Підрахунки (тотали)
-// 6) ФІЛЬТРИ ДЛЯ ІСТОРІЇ
-// 7) Рендер (оновлення інтерфейсу)
-// 8) Бізнес-логіка (додати транзакцію)
-// 9) Події кнопок
-// 10) Старт застосунку
+// Banking Simulator — ПРАКТИЧНЕ ЗАВДАННЯ ДЛЯ СТУДЕНТІВ
+// У коді нижче є пробіли (TODO). Доповніть їх згідно з поясненнями.
 // =======================
+
 
 // 1) СТАН ЗАСТОСУНКУ
 // Тут зберігаємо дані. Їх будемо змінювати і потім зберігати у localStorage.
 let account = {
-    balance: 0, //поточний баланс
-    transactions: [] //список транзакцій: {id, type, amount, date} 
+    balance: 0,          // поточний баланс
+    transactions: []     // список транзакцій: { id, type, amount, date }
 };
 
-//Поточний фільтр для історії транзакцій
-// "all", "deposit", "withdraw"
+// Поточний фільтр для історії транзакцій
+// "all" показує все, "deposit" лише поповнення, "withdraw" лише зняття
 let activeFilter = "all";
 
+
 // 2) ЕЛЕМЕНТИ СТОРІНКИ (DOM)
-// Знаходимо потрібні елементи один раз і потім використовуємо.
-const balanceValue = document.getElementById('balanceValue');
-
-const depositInput = document.getElementById('depositInput');
-const depositBtn = document.getElementById('depositBtn');
-
-const withdrawInput = document.getElementById('withdrawInput');
-const withdrawBtn = document.getElementById('withdrawBtn');
-
-const errorText = document.getElementById('errorText');
-
-const clearBtn = document.getElementById('clearBtn');
-
-const filterAll = document.getElementById('filterAll');
-const filterIn = document.getElementById('filterIn');
-const filterOut = document.getElementById('filterOut');
-
-const totalInValue = document.getElementById('totalInValue');
-const totalOutValue = document.getElementById('totalOutValue');
-const transactionsList = document.getElementById('transactionsList');
-
-const emptyState = document.getElementById('emptyState');
+// TODO 1: Отримайте елементи за їх id через document.getElementById("id"). Один приклад нижче.
+const balanceValue = document.getElementById("balanceValue");
+const depositInput = null;   // getElementById("depositInput")
+const withdrawInput = null;
+const depositBtn = null;
+const withdrawBtn = null;
+const transactionsList = null;
+const emptyState = null;
+const errorText = null;
+const clearBtn = null;
+const totalInValue = null;
+const totalOutValue = null;
+const filterAllBtn = null;
+const filterInBtn = null;
+const filterOutBtn = null;
 
 
 // 3) ДОПОМІЖНІ ФУНКЦІЇ
-// Ці функції маленькі і роблять одну просту дію.
-
-// Показує повідомлення про помилку
+// TODO 2 — showError(text): встановити текст помилки в елемент errorText (textContent).
 function showError(text) {
     if (!errorText) return;
-    errorText.textContent = text || "";
+    // Допишіть: errorText.textContent = ...
 }
 
-// Читає число з input і перевіряє його
-// Повертає число або null, якщо значення не коректне
+// Форматуємо число як гроші з 2 знаками після коми
+function formatMoney(value) {
+    const n = Number(value);
+    if (!Number.isFinite(n)) return "0.00";
+    return n.toFixed(2);
+}
+
+// Читаємо число з input і перевіряємо його
+// Повертає число або null, якщо значення неправильне
 function readAmount(inputEl) {
-    const amount = Number(inputEl.value);
+    const n = Number(inputEl.value);
 
-    if (amount <= 0) return null; // має бути більше 0
+    if (!Number.isFinite(n)) return null; // не число
+    if (n <= 0) return null;              // має бути > 0
 
-    return Math.round(amount * 100) / 100;
+    // Обрізаємо до 2 знаків після коми
+    return Math.round(n * 100) / 100;
 }
 
-// Генеруємо ІД для транзакції
+// TODO 3 — makeId(): повернути унікальний id (наприклад String(Date.now())).
 function makeId() {
-    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
-    return String(Date.now());
+    // Допишіть: return ...
 }
+
 
 // 4) localStorage
-// Зберігаємо й завантажуємо account, щоб дані не зникали після перезавантаження сторінки.
-
-// Зберегти account у localStorage
+// TODO 4 — save(): зберегти account у localStorage під ключем "account".
 function save() {
-    localStorage.setItem("account", JSON.stringify(account));
+    // Допишіть: localStorage.setItem...
 }
 
 // Завантажити account з localStorage
+// Якщо дані зіпсовані, залишаємо дефолтний стан
 function load() {
     const raw = localStorage.getItem("account");
     if (!raw) return;
-
     try {
         const data = JSON.parse(raw);
-
         const balance = Number(data.balance);
         const transactions = Array.isArray(data.transactions) ? data.transactions : [];
-
         account = {
-            balance,
+            balance: Number.isFinite(balance) ? balance : 0,
             transactions
         };
-
     } catch (e) {
         account = { balance: 0, transactions: [] };
-        console.log('Сталась неочікувана помилка: ', e);
     }
-
 }
 
-// 5) ПІДРАХУНКИ ДЛЯ СТАТИСТИКИ
-// Рахуємо скільки всього поповнень і скільки всього зняттів.
 
+// 5) ПІДРАХУНКИ
+// TODO 5 — calcTotals(): у циклі forEach по account.transactions додавати amount до totalIn або totalOut залежно від t.type.
 function calcTotals() {
     let totalIn = 0;
     let totalOut = 0;
-
     account.transactions.forEach(t => {
         const amount = Number(t.amount) || 0;
-
-        if (t.type === "deposit") totalIn += amount;
-        if (t.type === "withdraw") totalOut += amount;
+        // Допишіть 2 перевірки: if ( ... ) total... += ...;
     });
-
     return {
         totalIn: Math.round(totalIn * 100) / 100,
         totalOut: Math.round(totalOut * 100) / 100
     };
 }
 
+// функція для оновлення Totals на сторінці
+// TODO 6 — renderTotals(): вивести totalIn та totalOut у totalInValue.textContent та totalOutValue.textContent через formatMoney.
 function renderTotals() {
     const totals = calcTotals();
-
-    if (totalInValue) totalInValue.textContent = totals.totalIn;
-    if (totalOutValue) totalOutValue.textContent = totals.totalOut;
+    if (totalInValue) totalInValue.textContent = formatMoney(totals.totalIn);
+    // Допишіть: аналогічно для totalOutValue та totals.totalOut
 }
 
-// 6) ФІЛЬТРИ ДЛЯ ІСТОРІЇ
-// Керуємо тим, які транзакції показувати у списку.
-function updateFilterButtons(){
-    if(filterAll){
-        filterAll.classList.toggle("is-active", activeFilter === "all")
-    }
 
-    if(filterIn){
-        filterIn.classList.toggle("is-active", activeFilter === "deposit")
-    }
+// 6) ФІЛЬТРИ (модуль: умови, масиви — метод filter)
+// TODO 7 — getVisibleTransactions(): допишіть 
+// 1) перевірку — якщо activeFilter === "all", повернути account.transactions; 
+// 2) інакше повернути результат filter (за типом t.type === activeFilter).
+function getVisibleTransactions() {
+    // Допишіть умову по які мають повертатись усі транзакції: if ( ... ) return account.transactions;
+    
+    return account.transactions./* тут пропущене ключове слово для фільтрації, допишіть його */(t => t.type === activeFilter);
+}
 
-    if(filterOut){
-        filterOut.classList.toggle("is-active", activeFilter === "withdraw")
+// TODO 8 — updateFilterButtons(): допишіть у лапках ключові слова — classList і toggle
+// element.classList.toggle("клас", умова) — додає або знімає клас за умови.
+function updateFilterButtons() {
+    if (filterAllBtn) {
+        filterAllBtn.classList./* допишіть ключове слово для зміни класу */("is-active", activeFilter === "all");
+        filterAllBtn.setAttribute("aria-selected", String(activeFilter === "all"));
+    }
+    if (filterInBtn) {
+        filterInBtn./* допишіть ключове слово для додавання класу */.toggle("is-active", activeFilter === "deposit");
+        filterInBtn.setAttribute("aria-selected", String(activeFilter === "deposit"));
+    }
+    if (filterOutBtn) {
+        filterOutBtn./* допишіть ключові слова для зміни класу */("is-active", activeFilter === "withdraw");
+        filterOutBtn.setAttribute("aria-selected", String(activeFilter === "withdraw"));
     }
 }
 
-// Повертає транзакції з урахуванням activeFilter
-function getVisibleTransactions(){
-    if (activeFilter === "all") return account.transactions;
-    return account.transactions.filter(t => t.type === activeFilter)
+function setFilter(next) {
+    activeFilter = next;
+    updateFilterButtons();
+    render();
 }
 
-// 7) РЕНДЕР (ОНОВЛЕННЯ ІНТЕРФЕЙСУ)
-// Це головна функція, яка перемальовує все що бачить користувач.
-
+// функція для створення елементу транзакції
 // Створюємо один елемент транзакції <li>
-function createTransactionItem(t){
-    const li = document.createElement('li');
-    li.className = 'tx';
-
-    const left = document.createElement('div');
-    left.className = 'tx-left';
-
-    const title = document.createElement('div');
-    title.className = 'tx-title';
-
-    const isDeposit = t.type === 'deposit';
-
-    const badge = document.createElement('span');
-    badge.className = "badge "+ (isDeposit ? "badge-in" : "badge-out");
+function createTransactionItem(t) {
+    const li = document.createElement("li");
+    li.className = "tx";
+    const left = document.createElement("div");
+    left.className = "tx-left";
+    const title = document.createElement("div");
+    title.className = "tx-title";
+    const isDeposit = t.type === "deposit";
+    const badge = document.createElement("span");
+    badge.className = "badge " + (isDeposit ? "badge-in" : "badge-out");
     badge.textContent = isDeposit ? "Deposit" : "Withdraw";
 
-    const label = document.createElement('span');
+    const label = document.createElement("span");
     label.textContent = "Transaction";
 
     title.appendChild(badge);
     title.appendChild(label);
 
-    left.appendChild(title);
+    const date = document.createElement("div");
+    date.className = "tx-date";
+    date.textContent = t.date || "";
 
-    const amount = document.createElement('div');
-    amount.className = "tx-amount "+ (isDeposit ? "amount-in" : "amount-out");
-    amount.textContent = (isDeposit ? "+$" : "-$") + t.amount;
+    left.appendChild(title);
+    left.appendChild(date);
+    const amount = document.createElement("div");
+    amount.className = "tx-amount " + (isDeposit ? "amount-in" : "amount-out");
+    amount.textContent = (isDeposit ? "+$" : "-$") + formatMoney(t.amount);
 
     li.appendChild(left);
     li.appendChild(amount);
-
     return li;
 }
 
+// 7) РЕНДЕР (ОНОВЛЕННЯ ІНТЕРФЕЙСУ)
+// Це головна функція, яка перемальовує все що бачить користувач.
+// TODO 9 — render(): майже все заповнено. Допишіть тільки тіло циклу — додати функцію створення елементу транзакції до списку.
 function render() {
-    if(balanceValue) balanceValue.textContent = account.balance;
+    // Показуємо баланс
+    if (balanceValue) balanceValue.textContent = formatMoney(account.balance);
 
+    // Отримуємо транзакції з урахуванням фільтра
     const visible = getVisibleTransactions();
     const hasAny = account.transactions.length > 0;
     const hasVisible = visible.length > 0;
 
-    if(emptyState){
-        if(!hasAny){
-            emptyState.style.display = 'block';
-            emptyState.textContent = 'No transactions yet';
+    // Налаштовуємо пустий стан
+    if (emptyState) {
+        if (!hasAny) {
+            emptyState.style.display = "block";
+            emptyState.textContent = "No transactions yet";
         } else if (!hasVisible) {
-            emptyState.style.display = 'block';
-            emptyState.textContent = 'No transactions in this filter';
+            emptyState.style.display = "block";
+            emptyState.textContent = "No transactions in this filter";
         } else {
-            emptyState.style.display = 'none';
+            emptyState.style.display = "none";
         }
     }
 
-    if(transactionsList) {
+    // Малюємо список транзакцій
+    if (transactionsList) {
         transactionsList.innerHTML = "";
         visible.forEach(t => {
-            transactionsList.appendChild(createTransactionItem(t));
+            // Допишіть: transactionsList.appendChild( використайте функцію для створення елементу транзакції);
         });
     }
 
-    renderTotals();
+    // Оновлюємо статистику (Total deposits / Total withdrawals)
+    // TODO 10 — використайте функцію для оновлення Totals на сторінці (виклик по імені).
 }
 
-// 8) БІЗНЕС-ЛОГІКА
-// Тут ми додаємо транзакцію і змінюємо баланс.
-function addTransaction(type, amount){
+
+// БІЗНЕС-ЛОГІКА
+// TODO 11 — Допишіть ключове слово та перевірку умови оновлення балансу (if deposit — додати, if withdraw — відняти).
+function addTransaction(type, amount) {
     const tx = {
         id: makeId(),
         type,
@@ -230,35 +231,74 @@ function addTransaction(type, amount){
         date: new Date().toLocaleString()
     };
 
-    account.transactions.unshift(tx);
+    // Додаємо в початок, щоб нові були зверху
+    account.transactions./* допишіть ключове слово для додавання транзакції в початок */(tx);
 
-    if(type === 'deposit') account.balance += amount;
-    if(type === 'withdraw') account.balance -= amount;
+    // Оновлюємо баланс
+    if (type === "deposit") account.balance += amount;
+    // Допишіть: аналогічно для withdraw
+    
 
+    // Зберігаємо і оновлюємо інтерфейс
     save();
     render();
 }
 
-// 9) ПОДІЇ (КНОПКИ)
-// Коли користувач натискає кнопку, ми читаємо input, перевіряємо і додаємо транзакцію.
-if(depositBtn){
-    depositBtn.addEventListener("click", () => {
+
+// 8) ПОДІЇ (модуль: addEventListener, click)
+// TODO 12 — Обробник "Add": допишіть ключове слово для додавання події, та функцію повернення помилки з текстом "Enter a valid amount greater than 0"
+if (depositBtn) {
+    depositBtn./* допишіть ключове слово для додавання події */("click", () => {
+        showError("");
+
         const amount = readAmount(depositInput);
+        if (amount === null) {
+            // Допишіть: функцію повернення помилки з текстом "Enter a valid amount greater than 0"
+            return;
+        }
 
-        addTransaction('deposit', amount);
+        addTransaction("deposit", amount);
+        depositInput.value = "";
     });
 }
 
-if(withdrawBtn){
+// TODO 13 — Обробник "Take": допишіть функції повернення помилок а також ключове слово для додавання транзакції
+if (withdrawBtn) {
     withdrawBtn.addEventListener("click", () => {
+        showError("");
         const amount = readAmount(withdrawInput);
+        if (amount === null) {
+            // Допишіть: функцію повернення помилки з текстом "Enter a valid amount greater than 0"
+            return;
+        }
 
-        addTransaction('withdraw', amount);
+        if (amount > account.balance) {
+            // Допишіть: функцію повернення помилки з текстом "Not enough balance"
+            return;
+        }
+
+        /* Допишіть: виклик функції для додавання транзакції */("withdraw", amount);
+        withdrawInput.value = "";
     });
 }
 
-// 10) СТАРТ ЗАСТОСУНКУ
+// Очистити все
+if (clearBtn) {
+    clearBtn.addEventListener("click", () => {
+        showError("");
+        account = { balance: 0, transactions: [] };
+        save();
+        render();
+    });
+}
+
+// Фільтри
+if (filterAllBtn) filterAllBtn.addEventListener("click", () => setFilter("all"));
+if (filterInBtn) filterInBtn.addEventListener("click", () => setFilter("deposit"));
+if (filterOutBtn) filterOutBtn.addEventListener("click", () => setFilter("withdraw"));
+
+
+// 9) СТАРТ ЗАСТОСУНКУ
 // 1) Завантажуємо дані
 // 2) Ставимо фільтр "all" і малюємо все
-
-load();
+// TODO 14 — допишіть виклики функцій
